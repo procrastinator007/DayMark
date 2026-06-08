@@ -9,8 +9,8 @@ final class AppCoordinator {
 
     func start() {
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-        let width: CGFloat = 300
-        let height: CGFloat = 250
+        let width = DaymarkStyle.stickySize.width
+        let height = DaymarkStyle.stickySize.height
         let gap: CGFloat = 14
         let right = screen.maxX - width - 22
         let top = screen.maxY - height - 22

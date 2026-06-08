@@ -20,7 +20,7 @@ final class TomorrowWindowController: StickyWindowController, NSTextViewDelegate
         textView.delegate = self
         stack.addArrangedSubview(scroll)
         scroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        scroll.heightAnchor.constraint(greaterThanOrEqualToConstant: 170).isActive = true
+        scroll.heightAnchor.constraint(equalToConstant: 195).isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
     }
 
@@ -38,7 +38,7 @@ final class TomorrowWindowController: StickyWindowController, NSTextViewDelegate
         let value = state.tomorrowDraft.joined(separator: "\n")
         guard textView.string != value else { return }
         rendering = true
-        textView.string = value
+        DaymarkStyle.setText(value, in: textView)
         rendering = false
     }
 }

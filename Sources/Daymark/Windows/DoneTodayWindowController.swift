@@ -29,7 +29,7 @@ final class DoneTodayWindowController: StickyWindowController, NSTextViewDelegat
         stack.addArrangedSubview(recognitionLabel)
         stack.addArrangedSubview(logButton)
         scroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        scroll.heightAnchor.constraint(greaterThanOrEqualToConstant: 125).isActive = true
+        scroll.heightAnchor.constraint(equalToConstant: 145).isActive = true
         recognitionLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         logButton.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
@@ -54,7 +54,7 @@ final class DoneTodayWindowController: StickyWindowController, NSTextViewDelegat
         guard let day = state.days[key] else { return }
         if textView.string != day.reflection {
             rendering = true
-            textView.string = day.reflection
+            DaymarkStyle.setText(day.reflection, in: textView)
             rendering = false
         }
         let matches = ProgressMatcher.detect(

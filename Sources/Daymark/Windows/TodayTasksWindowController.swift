@@ -3,8 +3,9 @@ import AppKit
 @MainActor
 final class TodayTasksWindowController: StickyWindowController {
     private let store: DaymarkStore
-    private let taskLabel = DaymarkStyle.label("")
+    private let scroll = DaymarkStyle.textView(editable: false)
     private var observerID: UUID?
+    private var textView: NSTextView { scroll.documentView as! NSTextView }
 
     init(store: DaymarkStore, frame: NSRect) {
         self.store = store
@@ -14,9 +15,9 @@ final class TodayTasksWindowController: StickyWindowController {
             frame: frame,
             autosaveName: "Daymark.Today"
         )
-        taskLabel.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
-        stack.addArrangedSubview(taskLabel)
-        taskLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        stack.addArrangedSubview(scroll)
+        scroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        scroll.heightAnchor.constraint(equalToConstant: 195).isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
     }
 
@@ -25,8 +26,9 @@ final class TodayTasksWindowController: StickyWindowController {
     private func render(_ state: AppState) {
         let key = DateRules.dateKey(Date())
         let tasks = state.days[key]?.plannedTasks ?? []
-        taskLabel.stringValue = tasks.isEmpty
+        let value = tasks.isEmpty
             ? "Nothing was carried over from yesterday."
-            : tasks.map { "\($0.completed ? "✓" : "○")  \($0.text)" }.joined(separator: "\n\n")
+            : tasks.map { "\($0.completed ? "✓" : "○") \($0.text)" }.joined(separator: "\n")
+        DaymarkStyle.setText(value, in: textView)
     }
 }

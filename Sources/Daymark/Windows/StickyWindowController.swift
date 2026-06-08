@@ -21,10 +21,14 @@ class StickyWindowController: NSWindowController {
         window.level = .floating
         window.isMovableByWindowBackground = true
         window.hidesOnDeactivate = false
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        // Floating on the desktop, but excluded from other apps' full-screen spaces.
+        window.collectionBehavior = [.managed, .ignoresCycle]
         window.isReleasedWhenClosed = false
         window.becomesKeyOnlyIfNeeded = true
         window.setFrameAutosaveName(autosaveName)
+        window.minSize = DaymarkStyle.stickySize
+        window.maxSize = DaymarkStyle.stickySize
+        window.setContentSize(DaymarkStyle.stickySize)
         window.backgroundColor = .clear
         window.isOpaque = false
         window.hasShadow = false
@@ -35,7 +39,7 @@ class StickyWindowController: NSWindowController {
 
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 10
+        stack.spacing = 7
         stack.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(stack)
 

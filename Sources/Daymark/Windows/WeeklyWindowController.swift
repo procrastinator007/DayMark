@@ -3,12 +3,15 @@ import AppKit
 @MainActor
 final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
     private let store: DaymarkStore
-    private let currentLabel = DaymarkStyle.label("")
+    private let currentScroll = DaymarkStyle.textView(editable: false)
     private let sundayLabel = DaymarkStyle.label("Things to do next week", font: DaymarkStyle.titleFont)
     private let nextScroll = DaymarkStyle.textView(editable: true)
     private var rendering = false
     private var observerID: UUID?
+    private var currentHeightConstraint: NSLayoutConstraint?
+    private var nextHeightConstraint: NSLayoutConstraint?
 
+    private var currentTextView: NSTextView { currentScroll.documentView as! NSTextView }
     private var nextTextView: NSTextView { nextScroll.documentView as! NSTextView }
 
     init(store: DaymarkStore, frame: NSRect) {
@@ -20,13 +23,16 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
             autosaveName: "Daymark.Weekly"
         )
         nextTextView.delegate = self
-        stack.addArrangedSubview(currentLabel)
+        stack.addArrangedSubview(currentScroll)
         stack.addArrangedSubview(sundayLabel)
         stack.addArrangedSubview(nextScroll)
-        currentLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        currentScroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         sundayLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         nextScroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        nextScroll.heightAnchor.constraint(greaterThanOrEqualToConstant: 95).isActive = true
+        currentHeightConstraint = currentScroll.heightAnchor.constraint(equalToConstant: 195)
+        nextHeightConstraint = nextScroll.heightAnchor.constraint(equalToConstant: 80)
+        currentHeightConstraint?.isActive = true
+        nextHeightConstraint?.isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
     }
 
@@ -41,19 +47,21 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
     }
 
     private func render(_ state: AppState) {
-        currentLabel.stringValue = state.currentWeekGoals.isEmpty
+        let currentValue = state.currentWeekGoals.isEmpty
             ? "No goals were locked for this week."
-            : state.currentWeekGoals.map(display).joined(separator: "\n\n")
+            : state.currentWeekGoals.map(display).joined(separator: "\n")
+        DaymarkStyle.setText(currentValue, in: currentTextView)
 
         let sunday = DateRules.isSunday(Date())
         sundayLabel.isHidden = !sunday
         nextScroll.isHidden = !sunday
+        currentHeightConstraint?.constant = sunday ? 80 : 195
         guard sunday else { return }
 
         let value = state.nextWeekDraft.joined(separator: "\n")
         if nextTextView.string != value {
             rendering = true
-            nextTextView.string = value
+            DaymarkStyle.setText(value, in: nextTextView)
             rendering = false
         }
     }
