@@ -20,7 +20,8 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
             title: "Things to do this week",
             color: DaymarkStyle.coral,
             frame: frame,
-            autosaveName: "Daymark.Weekly"
+            autosaveName: "Daymark.Weekly",
+            size: frame.size
         )
         nextTextView.delegate = self
         stack.addArrangedSubview(currentScroll)
@@ -29,8 +30,13 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
         currentScroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         sundayLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         nextScroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        currentHeightConstraint = currentScroll.heightAnchor.constraint(equalToConstant: 195)
-        nextHeightConstraint = nextScroll.heightAnchor.constraint(equalToConstant: 80)
+        let availableHeight = max(70, frame.height - 58)
+        currentHeightConstraint = currentScroll.heightAnchor.constraint(
+            equalToConstant: availableHeight
+        )
+        nextHeightConstraint = nextScroll.heightAnchor.constraint(
+            equalToConstant: max(42, availableHeight * 0.42)
+        )
         currentHeightConstraint?.isActive = true
         nextHeightConstraint?.isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
@@ -63,7 +69,9 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
         let sunday = DateRules.isSunday(Date())
         sundayLabel.isHidden = !sunday
         nextScroll.isHidden = !sunday
-        currentHeightConstraint?.constant = sunday ? 80 : 195
+        currentHeightConstraint?.constant = sunday
+            ? max(42, (window?.contentView?.bounds.height ?? 155) * 0.28)
+            : max(70, (window?.contentView?.bounds.height ?? 155) - 58)
         guard sunday else { return }
 
         let value = state.nextWeekDraft.joined(separator: "\n")

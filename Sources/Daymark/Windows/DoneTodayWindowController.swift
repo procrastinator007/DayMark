@@ -3,35 +3,71 @@ import AppKit
 @MainActor
 final class DoneTodayWindowController: StickyWindowController, NSTextViewDelegate {
     private let store: DaymarkStore
-    private let scroll = DaymarkStyle.textView(editable: true)
-    private let recognitionLabel = DaymarkStyle.label(
-        "Write naturally. Matching tasks and habits update when logged.",
-        font: DaymarkStyle.smallFont
-    )
-    private let logButton = DaymarkStyle.button("Log today’s progress")
+    private let reflectionScroll = DaymarkStyle.textView(editable: true)
+    private let planScroll = DaymarkStyle.textView(editable: false)
+    private let logButton = DaymarkStyle.button("Update")
     private var rendering = false
     private var observerID: UUID?
 
-    private var textView: NSTextView { scroll.documentView as! NSTextView }
+    private var textView: NSTextView { reflectionScroll.documentView as! NSTextView }
+    private var planTextView: NSTextView { planScroll.documentView as! NSTextView }
 
     init(store: DaymarkStore, frame: NSRect) {
         self.store = store
         super.init(
-            title: "Things I did today",
+            title: "Today",
             color: DaymarkStyle.green,
             frame: frame,
-            autosaveName: "Daymark.DoneToday"
+            autosaveName: "Daymark.Daily",
+            size: frame.size,
+            showsHeading: false
         )
         textView.delegate = self
         logButton.target = self
         logButton.action = #selector(commitProgress)
-        stack.addArrangedSubview(scroll)
-        stack.addArrangedSubview(recognitionLabel)
-        stack.addArrangedSubview(logButton)
-        scroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        scroll.heightAnchor.constraint(equalToConstant: 145).isActive = true
-        recognitionLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        logButton.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        let columns = NSStackView()
+        columns.orientation = .horizontal
+        columns.distribution = .fillEqually
+        columns.spacing = 14
+        stack.addArrangedSubview(columns)
+        columns.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        let planColumn = NSStackView()
+        planColumn.orientation = .vertical
+        planColumn.alignment = .leading
+        planColumn.spacing = 5
+        planColumn.addArrangedSubview(
+            DaymarkStyle.label("Things I need to do today", font: DaymarkStyle.titleFont)
+        )
+        planColumn.addArrangedSubview(planScroll)
+
+        let reflectionColumn = NSStackView()
+        reflectionColumn.orientation = .vertical
+        reflectionColumn.alignment = .leading
+        reflectionColumn.spacing = 5
+        reflectionColumn.addArrangedSubview(
+            DaymarkStyle.label("Things I did today", font: DaymarkStyle.titleFont)
+        )
+        reflectionColumn.addArrangedSubview(reflectionScroll)
+        let buttonRow = NSView()
+        buttonRow.translatesAutoresizingMaskIntoConstraints = false
+        buttonRow.addSubview(logButton)
+        logButton.translatesAutoresizingMaskIntoConstraints = false
+        reflectionColumn.addArrangedSubview(buttonRow)
+
+        columns.addArrangedSubview(planColumn)
+        columns.addArrangedSubview(reflectionColumn)
+
+        let contentHeight = max(150, frame.height - 76)
+        planScroll.widthAnchor.constraint(equalTo: planColumn.widthAnchor).isActive = true
+        planScroll.heightAnchor.constraint(equalToConstant: contentHeight).isActive = true
+        reflectionScroll.widthAnchor.constraint(equalTo: reflectionColumn.widthAnchor).isActive = true
+        reflectionScroll.heightAnchor.constraint(equalToConstant: contentHeight - 30).isActive = true
+        buttonRow.widthAnchor.constraint(equalTo: reflectionColumn.widthAnchor).isActive = true
+        buttonRow.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        logButton.centerXAnchor.constraint(equalTo: buttonRow.centerXAnchor).isActive = true
+        logButton.centerYAnchor.constraint(equalTo: buttonRow.centerYAnchor).isActive = true
+        logButton.widthAnchor.constraint(equalToConstant: 78).isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
     }
 
@@ -52,8 +88,8 @@ final class DoneTodayWindowController: StickyWindowController, NSTextViewDelegat
 
     @objc private func commitProgress() {
         let count = store.commitToday()
-        recognitionLabel.stringValue = count == 0
-            ? "Reflection saved. No new matching items."
+        logButton.toolTip = count == 0
+            ? "Saved. No new matching items."
             : "Updated \(count) matching item\(count == 1 ? "" : "s")."
     }
 
@@ -65,16 +101,11 @@ final class DoneTodayWindowController: StickyWindowController, NSTextViewDelegat
             DaymarkStyle.setText(day.reflection, in: textView)
             rendering = false
         }
-        let matches = ProgressMatcher.detect(
-            reflection: day.reflection,
-            tasks: day.plannedTasks,
-            goals: state.currentWeekGoals,
-            alreadyCredited: day.creditedGoalIDs
-        )
-        let names = matches.taskIDs.compactMap { id in day.plannedTasks.first { $0.id == id }?.text }
-            + matches.goalIDs.compactMap { id in state.currentWeekGoals.first { $0.id == id }?.text }
-        recognitionLabel.stringValue = names.isEmpty
-            ? "Write naturally. Matching tasks and habits update when logged."
-            : "Recognized: \(names.joined(separator: ", "))"
+        let plan = day.plannedTasks.isEmpty
+            ? "Nothing was carried over from yesterday."
+            : day.plannedTasks.map {
+                "\($0.completed ? "✓" : "○") \($0.text)"
+            }.joined(separator: "\n")
+        DaymarkStyle.setText(plan, in: planTextView)
     }
 }

@@ -13,22 +13,40 @@ final class YesterdayScoreWindowController: StickyWindowController {
         self.store = store
         self.calendar = calendar
         super.init(
-            title: "Yesterday",
+            title: "Yesterday’s score",
             color: DaymarkStyle.glassBlue,
             frame: frame,
             autosaveName: "Daymark.YesterdayScore",
-            size: DaymarkStyle.scoreSize
+            size: frame.size,
+            showsHeading: false
         )
+        addSettingsButton(target: self, action: #selector(openSettings))
         lateLogButton.target = self
         lateLogButton.action = #selector(addLateLog)
 
+        let titleLabel = DaymarkStyle.label(
+            "Yesterday’s score",
+            font: DaymarkStyle.scoreTitleFont
+        )
+        stack.addArrangedSubview(titleLabel)
         stack.addArrangedSubview(dial)
-        stack.addArrangedSubview(summaryLabel)
-        stack.addArrangedSubview(lateLogButton)
+        titleLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         dial.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        dial.heightAnchor.constraint(equalToConstant: 142).isActive = true
-        summaryLabel.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        lateLogButton.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        dial.heightAnchor.constraint(
+            equalToConstant: max(110, frame.height - 70)
+        ).isActive = true
+
+        summaryLabel.translatesAutoresizingMaskIntoConstraints = false
+        lateLogButton.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(summaryLabel)
+        content.addSubview(lateLogButton)
+        NSLayoutConstraint.activate([
+            summaryLabel.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 16),
+            summaryLabel.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -10),
+            lateLogButton.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -12),
+            lateLogButton.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -7),
+            lateLogButton.widthAnchor.constraint(equalToConstant: 112)
+        ])
 
         observerID = store.observe { [weak self] state in self?.render(state) }
     }
@@ -50,6 +68,14 @@ final class YesterdayScoreWindowController: StickyWindowController {
               let textView = scroll.documentView as? NSTextView
         else { return }
         store.addLateLog(textView.string, for: yesterdayKey())
+    }
+
+    @objc private func openSettings() {
+        let alert = NSAlert()
+        alert.messageText = "Daymark Settings"
+        alert.informativeText = "This settings panel is ready for the controls you define next."
+        alert.addButton(withTitle: "Close")
+        alert.runModal()
     }
 
     private func render(_ state: AppState) {

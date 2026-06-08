@@ -9,14 +9,17 @@ final class StickyPanel: NSPanel {
 class StickyWindowController: NSWindowController, NSWindowDelegate {
     let content = NSView()
     let stack = NSStackView()
+    private let accentColor: NSColor
 
     init(
         title: String,
         color: NSColor,
         frame: NSRect,
         autosaveName: String,
-        size: NSSize = DaymarkStyle.stickySize
+        size: NSSize = DaymarkStyle.stickySize,
+        showsHeading: Bool = true
     ) {
+        self.accentColor = color
         let window = StickyPanel(
             contentRect: frame,
             styleMask: [.borderless, .nonactivatingPanel],
@@ -31,9 +34,10 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
         window.collectionBehavior = [.managed, .ignoresCycle]
         window.isReleasedWhenClosed = false
         window.becomesKeyOnlyIfNeeded = true
-        window.setFrameAutosaveName(autosaveName)
         window.minSize = size
         window.maxSize = size
+        window.contentMinSize = size
+        window.contentMaxSize = size
         window.setContentSize(size)
         window.backgroundColor = .clear
         window.isOpaque = false
@@ -42,8 +46,10 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
         super.init(window: window)
         window.delegate = self
 
-        DaymarkStyle.configure(content, color: color)
+        DaymarkStyle.configure(content)
         window.contentView = content
+        content.widthAnchor.constraint(equalToConstant: size.width).isActive = true
+        content.heightAnchor.constraint(equalToConstant: size.height).isActive = true
 
         stack.orientation = .vertical
         stack.alignment = .leading
@@ -51,9 +57,11 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
         stack.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(stack)
 
-        let heading = DaymarkStyle.label(title, font: DaymarkStyle.titleFont)
-        stack.addArrangedSubview(heading)
-        heading.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        if showsHeading {
+            let heading = DaymarkStyle.label(title, font: DaymarkStyle.titleFont)
+            stack.addArrangedSubview(heading)
+            heading.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        }
 
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 16),
@@ -61,6 +69,7 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
             stack.topAnchor.constraint(equalTo: content.topAnchor, constant: 15),
             stack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -15)
         ])
+        applySelectedAppearance(false, animated: false)
     }
 
     required init?(coder: NSCoder) {
@@ -68,13 +77,53 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func show() {
-        window?.orderFrontRegardless()
+        setEditingAppearance(false)
+        window?.orderFront(nil)
     }
 
     func setEditingAppearance(_ isEditing: Bool) {
+        applySelectedAppearance(isEditing, animated: true)
+    }
+
+    func addSettingsButton(target: AnyObject, action: Selector) {
+        let button = NSButton(
+            image: NSImage(
+                systemSymbolName: "gearshape.fill",
+                accessibilityDescription: "Settings"
+            ) ?? NSImage(),
+            target: target,
+            action: action
+        )
+        button.isBordered = false
+        button.contentTintColor = DaymarkStyle.ink
+        button.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -11),
+            button.topAnchor.constraint(equalTo: content.topAnchor, constant: 9),
+            button.widthAnchor.constraint(equalToConstant: 24),
+            button.heightAnchor.constraint(equalToConstant: 24)
+        ])
+    }
+
+    private func applySelectedAppearance(_ selected: Bool, animated: Bool) {
+        let changes = {
+            self.content.layer?.backgroundColor = (
+                selected ? self.accentColor.withAlphaComponent(0.92) : DaymarkStyle.passiveGlass
+            ).cgColor
+            self.window?.alphaValue = selected ? 1 : 0.78
+            DaymarkStyle.applyTextColor(
+                selected ? DaymarkStyle.ink : .white,
+                to: self.content
+            )
+        }
+        guard animated else {
+            changes()
+            return
+        }
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.14
-            window?.animator().alphaValue = isEditing ? 1 : 0.76
+            context.duration = 0.18
+            changes()
         }
     }
 

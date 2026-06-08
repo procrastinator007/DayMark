@@ -15,12 +15,15 @@ final class TomorrowWindowController: StickyWindowController, NSTextViewDelegate
             title: "Things I need to do tomorrow",
             color: DaymarkStyle.blue,
             frame: frame,
-            autosaveName: "Daymark.Tomorrow"
+            autosaveName: "Daymark.Tomorrow",
+            size: frame.size
         )
         textView.delegate = self
         stack.addArrangedSubview(scroll)
         scroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        scroll.heightAnchor.constraint(equalToConstant: 195).isActive = true
+        scroll.heightAnchor.constraint(
+            equalToConstant: max(60, frame.height - 58)
+        ).isActive = true
         observerID = store.observe { [weak self] state in self?.render(state) }
     }
 

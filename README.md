@@ -1,13 +1,15 @@
 # Daymark for macOS
 
-Daymark is a lightweight, native, privacy-first macOS app made of four movable
-sticky windows plus a compact yesterday-score panel:
+Daymark is a lightweight, native, privacy-first macOS app arranged as four
+movable panels:
 
-- Things I need to do today
+- A two-column daily panel comparing today's plan with what happened
 - Things I need to do tomorrow
-- Things I did today
 - Things to do this week
 - Yesterday's evidence-based score and late-log entry
+
+Panels rest as neutral translucent glass. Selecting or editing one restores
+its accent color and switches its text to white.
 
 Tomorrow's editable list becomes today's locked plan on the next date. A
 natural-language daily log can complete matching tasks and increment habits
