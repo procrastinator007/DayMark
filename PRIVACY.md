@@ -4,7 +4,9 @@ Daymark is local-first software. It does not transmit notes or usage data.
 
 ## Stored data
 
-Goals, tasks, reflections, and archives are stored in browser `localStorage`. A JSON backup is created only when the user selects **Export data**.
+Goals, tasks, reflections, and archives are stored in
+`~/Library/Application Support/Daymark/daymark.json`. A separate JSON backup is
+created only when the user selects **Export private data**.
 
 ## Email and Codex
 
@@ -12,8 +14,10 @@ Email is intentionally not built into Daymark. Users may configure their own Cod
 
 ## Network behavior
 
-The application code makes no network requests. Hosting the static application on GitHub Pages downloads the public code, but productivity data remains in that browser's storage.
+The application code makes no network requests. GitHub distributes the public
+source code only; productivity data stays on the user's Mac.
 
 ## Deletion
 
-Users can delete individual entries in the interface. Clearing site data in the browser deletes the complete local record. Exported JSON files must be deleted separately by the user.
+Deleting `~/Library/Application Support/Daymark` removes the app's complete
+local record. Exported JSON files must be deleted separately by the user.
