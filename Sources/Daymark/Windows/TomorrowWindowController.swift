@@ -34,6 +34,14 @@ final class TomorrowWindowController: StickyWindowController, NSTextViewDelegate
         store.update { $0.tomorrowDraft = lines }
     }
 
+    func textDidBeginEditing(_ notification: Notification) {
+        setEditingAppearance(true)
+    }
+
+    func textDidEndEditing(_ notification: Notification) {
+        setEditingAppearance(false)
+    }
+
     private func render(_ state: AppState) {
         let value = state.tomorrowDraft.joined(separator: "\n")
         guard textView.string != value else { return }

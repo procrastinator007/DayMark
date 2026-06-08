@@ -42,6 +42,14 @@ final class DoneTodayWindowController: StickyWindowController, NSTextViewDelegat
         store.recordReflection(textView.string)
     }
 
+    func textDidBeginEditing(_ notification: Notification) {
+        setEditingAppearance(true)
+    }
+
+    func textDidEndEditing(_ notification: Notification) {
+        setEditingAppearance(false)
+    }
+
     @objc private func commitProgress() {
         let count = store.commitToday()
         recognitionLabel.stringValue = count == 0

@@ -6,11 +6,17 @@ final class StickyPanel: NSPanel {
 }
 
 @MainActor
-class StickyWindowController: NSWindowController {
+class StickyWindowController: NSWindowController, NSWindowDelegate {
     let content = NSView()
     let stack = NSStackView()
 
-    init(title: String, color: NSColor, frame: NSRect, autosaveName: String) {
+    init(
+        title: String,
+        color: NSColor,
+        frame: NSRect,
+        autosaveName: String,
+        size: NSSize = DaymarkStyle.stickySize
+    ) {
         let window = StickyPanel(
             contentRect: frame,
             styleMask: [.borderless, .nonactivatingPanel],
@@ -26,13 +32,15 @@ class StickyWindowController: NSWindowController {
         window.isReleasedWhenClosed = false
         window.becomesKeyOnlyIfNeeded = true
         window.setFrameAutosaveName(autosaveName)
-        window.minSize = DaymarkStyle.stickySize
-        window.maxSize = DaymarkStyle.stickySize
-        window.setContentSize(DaymarkStyle.stickySize)
+        window.minSize = size
+        window.maxSize = size
+        window.setContentSize(size)
         window.backgroundColor = .clear
         window.isOpaque = false
         window.hasShadow = false
+        window.alphaValue = 0.76
         super.init(window: window)
+        window.delegate = self
 
         DaymarkStyle.configure(content, color: color)
         window.contentView = content
@@ -61,5 +69,20 @@ class StickyWindowController: NSWindowController {
 
     func show() {
         window?.orderFrontRegardless()
+    }
+
+    func setEditingAppearance(_ isEditing: Bool) {
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.14
+            window?.animator().alphaValue = isEditing ? 1 : 0.76
+        }
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        setEditingAppearance(true)
+    }
+
+    func windowDidResignKey(_ notification: Notification) {
+        setEditingAppearance(false)
     }
 }

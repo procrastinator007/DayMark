@@ -46,6 +46,14 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
         store.update { $0.nextWeekDraft = lines }
     }
 
+    func textDidBeginEditing(_ notification: Notification) {
+        setEditingAppearance(true)
+    }
+
+    func textDidEndEditing(_ notification: Notification) {
+        setEditingAppearance(false)
+    }
+
     private func render(_ state: AppState) {
         let currentValue = state.currentWeekGoals.isEmpty
             ? "No goals were locked for this week."

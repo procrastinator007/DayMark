@@ -64,3 +64,32 @@ func goalCanOnlyBeCreditedOncePerDay() {
     #expect(first.goalIDs == [goal.id])
     #expect(second.goalIDs.isEmpty)
 }
+
+@Test
+func dailyScoreSeparatesPlanningFromEvidence() {
+    let planOnly = DayRecord(
+        date: "2026-06-08",
+        plannedTasks: [DaymarkTask(text: "Build project")]
+    )
+    let withProgress = DayRecord(
+        date: "2026-06-08",
+        plannedTasks: [DaymarkTask(text: "Build project")],
+        reflection: "Started the project and built about 40%."
+    )
+
+    #expect(DailyScoring.score(planOnly).total == 20)
+    #expect(DailyScoring.score(withProgress).total > DailyScoring.score(planOnly).total)
+}
+
+@Test
+func lateLogAddsEvidenceWithoutReplacingOriginalReflection() {
+    let day = DayRecord(
+        date: "2026-06-08",
+        reflection: "Went out with friends.",
+        lateLogs: [LateLogEntry(text: "Also researched the project blocker.")]
+    )
+
+    #expect(DailyScoring.combinedReflection(day).contains("Went out with friends."))
+    #expect(DailyScoring.combinedReflection(day).contains("researched the project blocker"))
+    #expect(DailyScoring.score(day).adaptability > 0)
+}

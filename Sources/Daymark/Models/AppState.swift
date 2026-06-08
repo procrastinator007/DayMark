@@ -21,6 +21,13 @@ struct DayRecord: Codable, Equatable {
     var reflection = ""
     var creditedGoalIDs: Set<UUID> = []
     var loggedAt: Date?
+    var lateLogs: [LateLogEntry]?
+}
+
+struct LateLogEntry: Codable, Equatable, Identifiable {
+    var id = UUID()
+    var text: String
+    var createdAt = Date()
 }
 
 struct WeeklyArchive: Codable, Equatable {

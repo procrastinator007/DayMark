@@ -3,10 +3,12 @@ import AppKit
 @MainActor
 enum DaymarkStyle {
     static let stickySize = NSSize(width: 320, height: 270)
+    static let scoreSize = NSSize(width: 210, height: 270)
     static let yellow = NSColor(calibratedRed: 0.98, green: 0.91, blue: 0.55, alpha: 1)
     static let green = NSColor(calibratedRed: 0.68, green: 0.91, blue: 0.61, alpha: 1)
     static let blue = NSColor(calibratedRed: 0.62, green: 0.88, blue: 0.94, alpha: 1)
     static let coral = NSColor(calibratedRed: 0.96, green: 0.72, blue: 0.59, alpha: 1)
+    static let glassBlue = NSColor(calibratedRed: 0.35, green: 0.52, blue: 0.72, alpha: 1)
     static let ink = NSColor(calibratedWhite: 0.09, alpha: 1)
 
     static let titleFont = NSFont(name: "Times New Roman Bold", size: 19)
@@ -18,8 +20,8 @@ enum DaymarkStyle {
 
     static func configure(_ view: NSView, color: NSColor) {
         view.wantsLayer = true
-        view.layer?.backgroundColor = color.cgColor
-        view.layer?.cornerRadius = 2
+        view.layer?.backgroundColor = color.withAlphaComponent(0.82).cgColor
+        view.layer?.cornerRadius = 18
         view.layer?.shadowColor = NSColor.black.cgColor
         view.layer?.shadowOpacity = 0.22
         view.layer?.shadowRadius = 12

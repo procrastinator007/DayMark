@@ -1,12 +1,13 @@
 # Daymark for macOS
 
 Daymark is a lightweight, native, privacy-first macOS app made of four movable
-sticky windows:
+sticky windows plus a compact yesterday-score panel:
 
 - Things I need to do today
 - Things I need to do tomorrow
 - Things I did today
 - Things to do this week
+- Yesterday's evidence-based score and late-log entry
 
 Tomorrow's editable list becomes today's locked plan on the next date. A
 natural-language daily log can complete matching tasks and increment habits
@@ -60,8 +61,10 @@ swift test
 - `Windows/`: one controller per sticky window
 - `Logic/`: rollover, goal parsing, date rules, and progress matching
 - `Analytics/`: independent weekly and monthly report generation
+- `Scoring/`: replaceable daily scoring logic
 - `Storage/`: local JSON persistence
 - `Style/`: shared colors, typography, and controls
+- `Prompts/`: complete Codex analysis prompts
 
 ## Personal Codex automation
 

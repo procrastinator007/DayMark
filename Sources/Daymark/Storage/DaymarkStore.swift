@@ -85,6 +85,24 @@ final class DaymarkStore {
         return changed
     }
 
+    func addLateLog(_ text: String, for date: String, now: Date = Date()) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        update { state in
+            guard var day = state.days[date] else {
+                state.days[date] = DayRecord(
+                    date: date,
+                    lateLogs: [LateLogEntry(text: trimmed, createdAt: now)]
+                )
+                return
+            }
+            var entries = day.lateLogs ?? []
+            entries.append(LateLogEntry(text: trimmed, createdAt: now))
+            day.lateLogs = entries
+            state.days[date] = day
+        }
+    }
+
     func exportSnapshot(to url: URL) throws {
         let data = try JSONEncoder.daymark.encode(state)
         try data.write(to: url, options: .atomic)

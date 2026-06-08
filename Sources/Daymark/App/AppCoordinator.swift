@@ -14,8 +14,18 @@ final class AppCoordinator {
         let gap: CGFloat = 14
         let right = screen.maxX - width - 22
         let top = screen.maxY - height - 22
+        let scoreWidth = DaymarkStyle.scoreSize.width
 
         controllers = [
+            YesterdayScoreWindowController(
+                store: store,
+                frame: NSRect(
+                    x: max(screen.minX + 22, right - width - gap - scoreWidth - gap),
+                    y: top,
+                    width: scoreWidth,
+                    height: DaymarkStyle.scoreSize.height
+                )
+            ),
             WeeklyWindowController(
                 store: store,
                 frame: NSRect(x: right, y: top, width: width, height: height)
