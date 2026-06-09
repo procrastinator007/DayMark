@@ -58,6 +58,7 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
 
     func textDidEndEditing(_ notification: Notification) {
         setEditingAppearance(false)
+        render(store.state)
     }
 
     private func render(_ state: AppState) {
@@ -73,6 +74,7 @@ final class WeeklyWindowController: StickyWindowController, NSTextViewDelegate {
             ? max(42, (window?.contentView?.bounds.height ?? 155) * 0.28)
             : max(70, (window?.contentView?.bounds.height ?? 155) - 58)
         guard sunday else { return }
+        guard nextTextView.window?.firstResponder !== nextTextView else { return }
 
         let value = state.nextWeekDraft.joined(separator: "\n")
         if nextTextView.string != value {

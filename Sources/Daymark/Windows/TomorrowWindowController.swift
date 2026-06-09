@@ -43,9 +43,13 @@ final class TomorrowWindowController: StickyWindowController, NSTextViewDelegate
 
     func textDidEndEditing(_ notification: Notification) {
         setEditingAppearance(false)
+        render(store.state)
     }
 
     private func render(_ state: AppState) {
+        // Saving trims list items, so do not replace the editor's in-progress
+        // trailing space or blank line before the user can keep typing.
+        guard textView.window?.firstResponder !== textView else { return }
         let value = state.tomorrowDraft.joined(separator: "\n")
         guard textView.string != value else { return }
         rendering = true

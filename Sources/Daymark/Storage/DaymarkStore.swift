@@ -108,6 +108,10 @@ final class DaymarkStore {
         try data.write(to: url, options: .atomic)
     }
 
+    func saveNow() {
+        save()
+    }
+
     static func defaultFileURL() -> URL {
         let base = FileManager.default.urls(
             for: .applicationSupportDirectory,

@@ -93,3 +93,71 @@ func lateLogAddsEvidenceWithoutReplacingOriginalReflection() {
     #expect(DailyScoring.combinedReflection(day).contains("researched the project blocker"))
     #expect(DailyScoring.score(day).adaptability > 0)
 }
+
+@Test @MainActor
+func settingsPersistSeparatelyAndReload() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent("DaymarkSettingsTests-\(UUID().uuidString)")
+    let url = directory.appendingPathComponent("settings.json")
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let store = SettingsStore(fileURL: url)
+    store.update {
+        $0.stickyAlignment = .left
+        $0.alwaysOnTop = false
+        $0.opacity = 0.62
+        $0.fontName = .menlo
+        $0.fontSize = .large
+    }
+
+    let reloaded = SettingsStore(fileURL: url).settings
+    #expect(reloaded.stickyAlignment == .left)
+    #expect(reloaded.alwaysOnTop == false)
+    #expect(reloaded.opacity == 0.62)
+    #expect(reloaded.fontName == .menlo)
+    #expect(reloaded.fontSize == .large)
+}
+
+@Test @MainActor
+func stickyAlignmentUsesTheSelectedEdgeOfItsDisplay() {
+    let visibleFrame = NSRect(x: 0, y: 25, width: 1920, height: 1055)
+
+    #expect(
+        AppCoordinator.xPosition(
+            for: .left,
+            visibleFrame: visibleFrame,
+            width: 340,
+            inset: 32
+        ) == 32
+    )
+    #expect(
+        AppCoordinator.xPosition(
+            for: .right,
+            visibleFrame: visibleFrame,
+            width: 340,
+            inset: 32
+        ) == 1548
+    )
+}
+
+@Test @MainActor
+func stickyAlignmentSupportsDisplaysWithNegativeOrigins() {
+    let visibleFrame = NSRect(x: -1728, y: 0, width: 1728, height: 1080)
+
+    #expect(
+        AppCoordinator.xPosition(
+            for: .left,
+            visibleFrame: visibleFrame,
+            width: 340,
+            inset: 32
+        ) == -1696
+    )
+    #expect(
+        AppCoordinator.xPosition(
+            for: .right,
+            visibleFrame: visibleFrame,
+            width: 340,
+            inset: 32
+        ) == -372
+    )
+}
