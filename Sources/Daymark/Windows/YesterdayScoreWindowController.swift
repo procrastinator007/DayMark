@@ -4,14 +4,21 @@ import AppKit
 final class YesterdayScoreWindowController: StickyWindowController {
     private let store: DaymarkStore
     private let calendar: Calendar
+    private let onOpenSettings: () -> Void
     private let dial = ScoreDialView()
     private let summaryLabel = DaymarkStyle.label("", font: DaymarkStyle.smallFont)
     private let lateLogButton = DaymarkStyle.button("Add missing detail")
     private var observerID: UUID?
 
-    init(store: DaymarkStore, frame: NSRect, calendar: Calendar = .current) {
+    init(
+        store: DaymarkStore,
+        frame: NSRect,
+        calendar: Calendar = .current,
+        onOpenSettings: @escaping () -> Void
+    ) {
         self.store = store
         self.calendar = calendar
+        self.onOpenSettings = onOpenSettings
         super.init(
             title: "Yesterday’s score",
             color: DaymarkStyle.glassBlue,
@@ -71,11 +78,7 @@ final class YesterdayScoreWindowController: StickyWindowController {
     }
 
     @objc private func openSettings() {
-        let alert = NSAlert()
-        alert.messageText = "Daymark Settings"
-        alert.informativeText = "This settings panel is ready for the controls you define next."
-        alert.addButton(withTitle: "Close")
-        alert.runModal()
+        onOpenSettings()
     }
 
     private func render(_ state: AppState) {

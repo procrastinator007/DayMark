@@ -42,7 +42,7 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
         window.backgroundColor = .clear
         window.isOpaque = false
         window.hasShadow = false
-        window.alphaValue = 0.76
+        window.alphaValue = 1
         super.init(window: window)
         window.delegate = self
 
@@ -85,6 +85,13 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
         applySelectedAppearance(isEditing, animated: true)
     }
 
+    func apply(settings: AppSettings) {
+        window?.level = settings.alwaysOnTop ? .floating : .normal
+        DaymarkStyle.applyTypography(to: content)
+        DaymarkStyle.applyButtonVisibility(to: content)
+        applySelectedAppearance(window?.firstResponder is NSTextView, animated: false)
+    }
+
     func addSettingsButton(target: AnyObject, action: Selector) {
         let button = NSButton(
             image: NSImage(
@@ -108,14 +115,14 @@ class StickyWindowController: NSWindowController, NSWindowDelegate {
 
     private func applySelectedAppearance(_ selected: Bool, animated: Bool) {
         let changes = {
-            self.content.layer?.backgroundColor = (
-                selected ? self.accentColor.withAlphaComponent(0.92) : DaymarkStyle.passiveGlass
+            self.content.layer?.backgroundColor = self.accentColor.withAlphaComponent(
+                selected
+                    ? min(1, DaymarkStyle.settings.opacity + 0.18)
+                    : DaymarkStyle.settings.opacity
             ).cgColor
-            self.window?.alphaValue = selected ? 1 : 0.78
-            DaymarkStyle.applyTextColor(
-                selected ? DaymarkStyle.ink : .white,
-                to: self.content
-            )
+            self.window?.alphaValue = 1
+            DaymarkStyle.applyTextColor(DaymarkStyle.ink, to: self.content)
+            DaymarkStyle.applyButtonVisibility(to: self.content)
         }
         guard animated else {
             changes()
